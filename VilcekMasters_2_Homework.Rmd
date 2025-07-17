@@ -1,0 +1,224 @@
+---
+title: "Masters Homework 2"
+author: "Iman Beckles"
+date: "7/21/2025"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+
+>- Find summary information about the total blood mercury levels in our NYC HANES data (hint: names(nyc) will call the names of each column). What is the max value, what is the minimum value.  
+
+```{r}
+nyc <- read.csv("https://raw.githubusercontent.com/fredlapolla/RVilcekMaster23/master/NYC_HANES_DIAB.csv")
+
+names(nyc)
+summary(nyc$MERCURYTOTALBLOOD)
+
+#max value = 123.2344
+#min value = 0.0919
+
+
+```
+
+>- Bonus/Challenge: What is the Standard Deviation and skewness of the blood mercury?
+
+```{r}
+MERCURYTOTALBLOODSD <- sd(nyc$MERCURYTOTALBLOOD)
+print(MERCURYTOTALBLOODSD)
+```
+
+
+
+>- Install a package and load, such as "ggplot2" or "dplyr"
+
+```{r}
+#i googled the error message i got and learned that a mirror should be used when downloading packages. 
+install.packages("ggplot2", repos = "https://cloud.r-project.org")
+library(ggplot2)
+
+
+```
+
+
+
+
+
+>- What two commands are needed to install and use a package in R?
+
+```{r}
+#install.packages("packagename") to install once. 
+#library(packagename) to load every time you use R
+```
+
+
+
+
+>- When you read in a .csv file into R, what class is the object that you read in (like nyc)?
+#the class is a dataframe (data.frame)
+
+
+>- What command can you use to determine what type of data is in a column?
+
+```{r}
+#class(object) 
+#for eg: if i wanted to determine the type of data in the nyc cadmium column, I could use 
+class(nyc$CADMIUM)
+```
+
+
+>- Provide a command to find the type of data in the DX_DBTS column of nyc. 
+
+```{r}
+class(nyc$DX_DBTS)
+```
+
+
+>- Provide the same command the type of data but use the other way of indexing from what you did above. 
+
+```{r}
+class(nyc[,10])
+
+```
+
+
+
+>- What would happen if we had chosen the first 4 columns of NYC HANES and made a matrix? What would the class of the cells in this matrix be? Why?
+
+```{r}
+class(nyc$KEY)
+class(nyc$GENDER)
+class(nyc$SPAGE)
+class(nyc$AGEGROUP)
+
+#the first column is character class, the following 3 are integer classes. If we make a matrix, R will coerce all the integers into characters as it there can only be 1 data type in a matrix
+```
+
+
+>- If we make a vector,vec<- c(3,9,4,7,8,9), and multiply it by WannaMatrix, what is the value in the third row, third column? 
+
+```{r}
+WannaMatrix <- nyc[5:10, 6:9]
+WannaMatrix <- as.matrix(WannaMatrix,nrow = 6, ncol = 4)
+vec <- c(3,9,4,7,8,9)
+print(WannaMatrix)
+NewMatrix <- vec * WannaMatrix
+NewMatrix[3,3]
+
+
+```
+
+
+
+>- What happens if instead we made a vector vec2 <- c(3,9,4,7,8) and multiply it by WannaMatrix, what is the third row, third column value? What is going on? 
+
+```{r}
+vec2 <- c(3,9,4,7,8)
+NewMatrix2 <- vec2 * WannaMatrix
+print(NewMatrix2)
+NewMatrix2[3,3]
+
+## we get an error code because there are 5 objects in the vector but 6 in the matrix, and R cannot cleanly recycle the vector as 6 (the longer vector) is not evenly divisible by 5 (the shorter vector)
+```
+
+
+>- Look up the arguments for read.csv
+
+```{r}
+args(read.csv)
+
+```
+
+
+>- Use apply() to find the median value of CADMIUM, LEAD CHOLESTEROLTOTAL, GLUCOSESI, CREATININESI, and CREATININE
+
+```{r}
+LetColumns <- nyc[, c("CADMIUM", "LEAD", "CHOLESTEROLTOTAL", "GLUCOSESI", "CREATININESI", "CREATININE" )]
+apply(LetColumns, 2, median, na.rm = TRUE)
+```
+
+
+>- Do the same using sapply()
+
+```{r}
+sapply(LetColumns, median, na.rm = TRUE)
+```
+
+>- Use a for loop to find the median value of columns 16:19
+
+```{r}
+for (i in 16:19) {
+  value <- median(nyc[,i], na.rm = TRUE)
+  print(c(colnames(nyc[i]), value))
+}
+```
+
+
+>- Make a for loop to find the standard deviation (hint sd() ) of CHOLESTEROLTOTAL, GLUCOSESI, CREATININESI, AND CREATININE
+
+```{r}
+for (i in 16:19) {
+  StanDev <- sd(nyc[,i], na.rm = TRUE)
+  print(c(colnames(nyc[i]), StanDev))
+}
+```
+
+
+>- Bonus/Challenge Create a vector in which to put the standard deviations 
+
+```{r}
+vec3 <- sapply(nyc[, c("CHOLESTEROLTOTAL", "GLUCOSESI", "CREATININESI", "CREATININE")], sd, na.rm = TRUE)
+print(vec3)
+```
+
+
+>- Use ifelse to create a new variable of high and normal A1C dichotomizing with 7 as a threshold for high levels
+
+```{r}
+nyc <- na.omit(nyc)
+nyc$HiA1C <- ifelse(nyc$A1C > 7 , 1, 0)
+nyc$HiA1C <- factor(nyc$HiA1C)
+summary(nyc$HiA1C)
+```
+
+
+>- Subset to only have females (gender == "female")
+
+```{r}
+#assuming 1 is male and 2 is female
+females <- nyc[nyc$GENDER == 2 , ]
+
+```
+
+
+>- Create a subset of males and find the median total cholesterol level
+
+```{r}
+males <- nyc[nyc$GENDER == 1 , ]
+median(males$CHOLESTEROLTOTAL)
+```
+
+
+>- Try to create a summary of the mean A1C using two factors, GENDER and DX_DBTS
+
+```{r}
+#by(data, INDICES, FUN)
+#i can title the factors for readability
+A1CMeanSummary <- by(nyc$A1C, list(Gender = nyc$GENDER, DiabetesDx = nyc$DX_DBTS), mean, na.rm = TRUE)
+print(A1CMeanSummary)
+```
+
+Find the class of the first three columns of data. What are they?
+
+```{r}
+#i cant just use my sapply function becasue the A1CMeanSummary isnt a dataframe. I'm going to convert it first. 
+A1CMeanSummarydf <- as.data.frame.table(A1CMeanSummary)
+sapply(A1CMeanSummarydf[, 1:3], class)
+
+```
+
